@@ -20,25 +20,30 @@ const LoginPage = () => {
     e.preventDefault();
     setError("");
 
-    if (isSignUp) {
-      if (password !== confirmPassword) {
-        setError("Passwords do not match");
+    try {
+      if (isSignUp) {
+        if (password !== confirmPassword) {
+          setError("Passwords do not match");
+          return;
+        }
+        const result = await signup(name, email, password, role);
+        if (result.success) {
+          navigate(`/${role}`);
+        } else {
+          setError(result.error || "Sign up failed. Please try again.");
+        }
         return;
       }
-      const result = await signup(name, email, password, role);
-      if (result.success) {
-        navigate(`/${role}`);
-      } else {
-        setError(result.error || "Sign up failed");
-      }
-      return;
-    }
 
-    const result = await login(email, password);
-    if (result.success) {
-      navigate(`/${result.user.role}`);
-    } else {
-      setError(result.error || "Invalid email or password");
+      const result = await login(email, password);
+      if (result.success) {
+        navigate(`/${result.user.role}`);
+      } else {
+        setError(result.error || "Invalid email or password");
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setError("An unexpected error occurred. Please try again.");
     }
   };
 
@@ -55,7 +60,7 @@ const LoginPage = () => {
           </div>
         </div>
         {error && (
-          <div className="error-banner" style={{ color: "#b00020", marginBottom: "12px", textAlign: "center" }}>{error}</div>
+          <div className="error-message">{error}</div>
         )}
         <form className="login-form" onSubmit={handleSubmit} autoComplete="off">
           {isSignUp && (
